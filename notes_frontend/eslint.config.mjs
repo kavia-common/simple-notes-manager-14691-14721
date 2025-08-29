@@ -9,6 +9,11 @@ export default [
   // TypeScript support
   ...tseslint.configs.recommended,
 
+  // Ignore generated outputs and build artifacts
+  {
+    ignores: ['.astro/**', 'dist/**', 'node_modules/**'],
+  },
+
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {

@@ -1,0 +1,62 @@
+---
+export const prerender = true;
+/** Astro build requires getStaticPaths for dynamic routes when prerendering. Return no paths. */
+export async function getStaticPaths() {
+  return [];
+}
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/Header.astro";
+import Sidebar from "../../components/Sidebar.astro";
+---
+<Layout>
+  <Fragment slot="sidebar"><Sidebar /></Fragment>
+  <Fragment slot="header"><Header /></Fragment>
+
+  <section class="card" style="padding:16px">
+    <div id="note-view"></div>
+    <div style="display:flex; gap:8px; margin-top:12px">
+      <a id="edit-link" class="btn ghost">Edit</a>
+      <button id="delete-btn" class="btn secondary">Delete</button>
+      <a class="btn" href="/notes">Back</a>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  import { API } from "../../lib/api";
+
+  const id = (Astro.url.pathname.split('/').pop() || '').trim();
+
+  async function loadNote() {
+    const view = document.getElementById('note-view');
+    view!.innerHTML = "Loading...";
+    const res = await API.getNote(id);
+    if (res.success && res.data) {
+      const n = res.data as any;
+      (document.getElementById('edit-link') as HTMLAnchorElement).href = `/notes/${id}/edit`;
+      view!.innerHTML = `
+        <h2 style="margin:0 0 8px">${(n.title || 'Untitled').replace(/</g,'&lt;')}</h2>
+        <small style="color:var(--muted)">${(n.updated_at || '').toString().replace('T',' ').slice(0,16)}</small>
+        <div style="margin-top:12px; white-space:pre-wrap">${(n.content || '').replace(/</g,'&lt;')}</div>
+      `;
+    } else {
+      view!.innerHTML = `<p style="color:crimson">${res.error || 'Not found'}</p>`;
+    }
+  }
+
+  async function deleteNote() {
+    if (!confirm('Delete this note?')) return;
+    const res = await API.deleteNote(id);
+    if (res.success) {
+      window.location.href = "/notes";
+    } else {
+      alert(res.error || 'Failed to delete');
+    }
+  }
+
+  function init() {
+    loadNote();
+    document.getElementById('delete-btn')?.addEventListener('click', deleteNote);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+</script>

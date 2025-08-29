@@ -1,0 +1,40 @@
+---
+---
+<aside class="sidebar">
+  <nav style="display:grid; gap:8px">
+    <a class="btn ghost" href="/notes">All Notes</a>
+    <a class="btn ghost" href="/notes/new">New Note</a>
+  </nav>
+  <div style="margin-top: auto;"></div>
+  <div style="display:grid; gap:8px; margin-top:16px">
+    <a class="btn secondary" href="/login" id="login-link">Login</a>
+    <a class="btn ghost" href="/register" id="register-link">Register</a>
+    <button class="btn" id="logout-btn" style="display:none">Logout</button>
+  </div>
+</aside>
+
+<script>
+  function setupAuthButtons() {
+    const token = localStorage.getItem('auth_token');
+    const login = document.getElementById('login-link');
+    const register = document.getElementById('register-link');
+    const logout = document.getElementById('logout-btn');
+
+    if (token) {
+      if (login) login.style.display = 'none';
+      if (register) register.style.display = 'none';
+      if (logout) {
+        logout.style.display = 'block';
+        logout.addEventListener('click', () => {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+        });
+      }
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupAuthButtons);
+  } else {
+    setupAuthButtons();
+  }
+</script>

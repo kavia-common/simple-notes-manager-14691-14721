@@ -1,0 +1,63 @@
+---
+export const prerender = true;
+/** Astro build requires getStaticPaths for dynamic routes when prerendering. Return no paths. */
+export async function getStaticPaths() {
+  return [];
+}
+import Layout from "../../../layouts/Layout.astro";
+import Header from "../../../components/Header.astro";
+import Sidebar from "../../../components/Sidebar.astro";
+import NoteEditor from "../../../components/NoteEditor.astro";
+---
+<Layout>
+  <Fragment slot="sidebar"><Sidebar /></Fragment>
+  <Fragment slot="header"><Header /></Fragment>
+
+  <div id="editor-mount"></div>
+</Layout>
+
+<script>
+  import NoteEditor from "../../../components/NoteEditor.astro";
+  import { API } from "../../../lib/api";
+
+  const id = (Astro.url.pathname.split('/').filter(Boolean).slice(-2, -1)[0] || '').trim();
+
+  async function mount() {
+    const res = await API.getNote(id);
+    const mountNode = document.getElementById('editor-mount');
+    if (res.success && res.data) {
+      const n = res.data as any;
+      // Since Astro islands are SSR, we will render a simple HTML form here for client-side edit
+      mountNode!.innerHTML = `
+        <div class="card" style="padding:16px">
+          <form id="note-form" class="note-editor">
+            <div class="row">
+              <label for="title">Title</label>
+              <input id="title" name="title" value="${(n.title || '').replace(/"/g,'&quot;')}" required />
+            </div>
+            <div class="row">
+              <label for="content">Content</label>
+              <textarea id="content" name="content" rows="10" required>${(n.content || '').replace(/</g,'&lt;')}</textarea>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end">
+              <a class="btn ghost" href="/notes/${id}">Cancel</a>
+              <button type="submit" class="btn accent">Save</button>
+            </div>
+          </form>
+        </div>
+      `;
+      document.getElementById('note-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = (document.getElementById('title') as HTMLInputElement).value.trim();
+        const content = (document.getElementById('content') as HTMLTextAreaElement).value.trim();
+        const resp = await API.updateNote(id, { title, content });
+        if (resp.success) window.location.href = `/notes/${id}`;
+        else alert(resp.error || 'Unable to save');
+      });
+    } else {
+      mountNode!.innerHTML = `<p style="color:crimson">${res.error || 'Note not found'}</p>`;
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
+</script>
