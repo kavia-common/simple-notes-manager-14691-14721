@@ -1,0 +1,12 @@
+---
+const { notes } = Astro.props as { notes: Array<{ id: string|number; title: string; content: string; updated_at?: string }> };
+---
+<div class="list" id="note-list">
+  {notes?.map((n) => (
+    <a class="item" href={`/notes/${n.id}`}>
+      <strong>{n.title || 'Untitled'}</strong>
+      <small style="color:var(--muted)">{(n.updated_at || '').toString().replace('T',' ').slice(0,16)}</small>
+      <div style="color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{n.content || ''}</div>
+    </a>
+  ))}
+</div>

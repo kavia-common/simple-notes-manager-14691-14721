@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Sidebar from "../components/Sidebar.astro";
+import AuthForm from "../components/AuthForm.astro";
+---
+<Layout>
+  <Fragment slot="sidebar"><Sidebar /></Fragment>
+  <Fragment slot="header"><Header /></Fragment>
+
+  <AuthForm mode="login" />
+</Layout>

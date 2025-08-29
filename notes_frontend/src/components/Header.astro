@@ -1,0 +1,36 @@
+---
+const { onSearch } = Astro.props as { onSearch?: boolean };
+---
+<header class="header">
+  <div class="brand">
+    <div class="brand-badge">N</div>
+    Simple Notes
+  </div>
+  <div style="flex:1"></div>
+  <div class="search-bar">
+    <input id="search-input" placeholder="Search notes..." aria-label="Search notes" />
+    <button id="search-btn" class="btn ghost" aria-label="Search">Search</button>
+  </div>
+</header>
+
+<script>
+  // PUBLIC_INTERFACE
+  /** Emits a 'notes:search' CustomEvent from window with { query } detail */
+  function wireSearch() {
+    const input = document.getElementById('search-input');
+    const btn = document.getElementById('search-btn');
+    const fire = () => {
+      const q = input?.value?.trim() || '';
+      window.dispatchEvent(new CustomEvent('notes:search', { detail: { query: q } }));
+    };
+    btn?.addEventListener('click', fire);
+    input?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') fire();
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireSearch);
+  } else {
+    wireSearch();
+  }
+</script>

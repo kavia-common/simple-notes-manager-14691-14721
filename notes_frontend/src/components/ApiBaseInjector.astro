@@ -1,0 +1,13 @@
+---
+/**
+ * Optionally reads PUBLIC_NOTES_API_BASE from a meta tag and sets window.__NOTES_API_BASE__
+ * You can set it in the hosting environment by injecting:
+ * <meta name="PUBLIC_NOTES_API_BASE" content="https://backend.url">
+ */
+---
+<script>
+  const meta = document.querySelector('meta[name="PUBLIC_NOTES_API_BASE"]') as HTMLMetaElement | null;
+  if (meta?.content) {
+    (window as any).__NOTES_API_BASE__ = meta.content;
+  }
+</script>

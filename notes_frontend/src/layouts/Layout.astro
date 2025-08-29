@@ -1,0 +1,29 @@
+---
+import ThemeToggle from '../components/ThemeToggle.astro';
+import ApiBaseInjector from '../components/ApiBaseInjector.astro';
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Simple Notes</title>
+    <!-- Optionally set from hosting via meta -->
+    <!-- <meta name="PUBLIC_NOTES_API_BASE" content="https://backend.example.com"> -->
+    <ApiBaseInjector />
+	</head>
+	<body>
+		<ThemeToggle />
+		<div class="container">
+			<slot name="sidebar" />
+			<slot name="header" />
+			<main class="main">
+        <slot />
+      </main>
+		</div>
+	</body>
+</html>

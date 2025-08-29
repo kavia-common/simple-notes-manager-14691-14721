@@ -1,0 +1,47 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/Header.astro";
+import Sidebar from "../../components/Sidebar.astro";
+import NoteList from "../../components/NoteList.astro";
+---
+<Layout>
+  <Fragment slot="sidebar"><Sidebar /></Fragment>
+  <Fragment slot="header"><Header onSearch={true} /></Fragment>
+
+  <section class="card" style="padding:16px">
+    <div id="notes-container"></div>
+  </section>
+</Layout>
+
+<script>
+  import NoteList from "../../components/NoteList.astro";
+  import { API } from "../../lib/api";
+
+  async function loadNotes(query = "") {
+    const container = document.getElementById('notes-container');
+    container!.innerHTML = "<p>Loading...</p>";
+    const res = await API.listNotes(query);
+    if (res.success && res.data) {
+      const notes = res.data as any[];
+      // Render using a simple template
+      const html = notes.map(n => `
+        <a class="item" href="/notes/${n.id}">
+          <strong>${n.title || 'Untitled'}</strong>
+          <small style="color:var(--muted)">${(n.updated_at || '').toString().replace('T',' ').slice(0,16)}</small>
+          <div style="color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${(n.content || '').replace(/</g,'&lt;')}</div>
+        </a>
+      `).join('');
+      container!.innerHTML = `<div class="list">${html}</div>`;
+    } else {
+      container!.innerHTML = `<p style="color:crimson">${res.error || 'Failed to load notes'}</p>`;
+    }
+  }
+
+  function init() {
+    loadNotes();
+    window.addEventListener('notes:search', (e: any) => {
+      loadNotes(e.detail?.query || "");
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+</script>

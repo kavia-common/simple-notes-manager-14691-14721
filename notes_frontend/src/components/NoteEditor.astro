@@ -1,0 +1,56 @@
+---
+import { API } from "../lib/api";
+const { mode, note } = Astro.props as {
+  mode: 'create' | 'edit',
+  note?: { id?: string|number; title?: string; content?: string };
+};
+---
+<div class="card" style="padding:16px">
+  <form id="note-form" class="note-editor">
+    <div class="row">
+      <label for="title">Title</label>
+      <input id="title" name="title" placeholder="Note title" value={note?.title || ''} required />
+    </div>
+    <div class="row">
+      <label for="content">Content</label>
+      <textarea id="content" name="content" rows="10" placeholder="Write your note..." required>{note?.content || ''}</textarea>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end">
+      <a class="btn ghost" href="/notes">Cancel</a>
+      <button type="submit" class="btn accent">{mode === 'create' ? 'Create' : 'Save'}</button>
+    </div>
+  </form>
+</div>
+
+<script>
+  import { API } from "../lib/api";
+
+  function wireForm() {
+    const form = document.getElementById('note-form');
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = (document.getElementById('title') as HTMLInputElement).value.trim();
+      const content = (document.getElementById('content') as HTMLTextAreaElement).value.trim();
+
+      let resp;
+      const id = (Astro as any).props?.note?.id;
+      if ((Astro as any).props?.mode === 'edit' && id) {
+        resp = await API.updateNote(id, { title, content });
+      } else {
+        resp = await API.createNote({ title, content });
+      }
+      if (resp.success && resp.data) {
+        const nid = (resp as any).data.id ?? id;
+        window.location.href = `/notes/${nid}`;
+      } else {
+        alert(resp.error || 'Unable to save note');
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireForm);
+  } else {
+    wireForm();
+  }
+</script>
